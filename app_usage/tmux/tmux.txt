@@ -1,0 +1,301 @@
+-*-Org-*-
+#+TITLE: tmux
+#+AUTHOR: Knight Yu
+#+EMAIL: knighthsuyucheng@gmail.com
+#+DATE: 2016-03-13
+#+LANGUALE: en
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+REVEAL_EXTRA_CSS: ./presentation.css
+
+* Scenario
+- I need more consoles!
+- compile
+- vim
+- use mouse to copy/paste messages between terminals
+- repeat setup/environment in terminal
+    - ssh login
+#+CAPTION: many terminals
+#+NAME:   fig:TMUX-PREFACE-NO-ACTION
+[[./pic/no_action.png]]
+
+* tmux
+- a terminal multiplexer
+- a client-server architecture
+- similar GNU Screen
+   - memory usage: screen >> tmux
+- features
+   - persistence
+   - quick change session
+   - shared sessions (pair programming)
+   - window-splitting
+** What is Terminal Multiplexer
+- “A terminal multiplexer is a software 
+  application that can be used to multiplex
+  several virtual consoles, allowing a user
+  to access multiple separate terminal sessions 
+  inside a single terminal window or remote 
+  terminal session.”
+** tmux Install
+- refer your distribution
+    - Archlinux
+    #+BEGIN_SRC shell
+    $ sudo pacman -S tmux
+    #+END_SRC
+    - Debian/Ubuntu: apt-get install tmux
+    #+BEGIN_SRC shell
+    $ sudo apt-get install tmux
+    #+END_SRC
+    - Redhat (centos/fedora)
+    #+BEGIN_SRC shell
+    $ sudo dnf install tmux
+    # or
+    $ sudo yum install tmux
+    #+END_SRC
+    - Mac
+    #+BEGIN_SRC shell
+    # use brew
+    $ brew install tmux
+    # use MacPorts
+    $ port install tmux
+    #+END_SRC
+    - Windows Cygwin
+       - clink tmux via package manager
+** tmux Client-Server Architecture
+#+CAPTION: client-server
+#+NAME:   fig:TMUX-CLIENT-SERVER
+[[./pic/session-window-pane.png]]
+
+** tmux View
+- trigger tmux via tmux command
+  #+BEGIN_SRC shell
+  $ tmux
+  #+END_SRC
+- session: terminal of tmux 
+- window: terminal of session
+- pane (pannnel): terminal of window
+#+CAPTION: tmux session list
+#+NAME:   fig:TMUX-SESSION-LIST
+[[./pic/tmux_session_list.png]]
+
+*** tmux Window Pane View
+#+CAPTION: tmux Window Pane View
+#+NAME:   fig:TMUX-Window-Pane-View
+[[./pic/tmux_developer.png]]
+** Flexible Session / Window / Pane Windows Manager
+- [prefix] key: default is "ctrl b"
+- tmux command mode: default is "[prefix] :"
+    - enter your command to control tmux
+
+*** Tmux Command (Bash/Zsh, ..., in Terminal)
+#+ATTR_HTML: :width 100% :height 100%
+| Describe                            | Command                           |
+|-------------------------------------+-----------------------------------|
+| start tmux and create new session   | tmux                              |
+| list sessions                       | tmux ls                           |
+| enter tmux and use last session     | tmux attach                       |
+| enter tmux and restore <session-id> | tmux attach -t <session-id>       |
+| kill <session-id>                   | tmux kill-session -t <session-id> |
+| kill all sessions                   | tmux kill-session -a              |
+| detach <session-id>                 | tmux detach -t <session-id>       |
+| detach <session-name>               | tmux detach -s <session-name>     |
+
+*** tmux Session Control
+#+ATTR_HTML: :width 100% :height 100%
+| Describe                         | tmux command mode     | Command    |
+|----------------------------------+-----------------------+------------|
+| create new session               | new                   |  N/A       |
+| create new session, and set name | new -s <name>         |  N/A       |
+| list keybinding                  | list-keys             | [prefix] ? |
+| rename session                   | rename-session 'name' | [prefix] $ |
+| list sessions                    | choose-tree           | [prefix] s |
+| next session                     | switch-client -p      | [prefix] ( |
+| previous session                 | switch-client -n      | [prefix] ) |
+| deattach session                 | detach-client         | [prefix] d |
+| find string in all window        | find-window 'string'  | [prefix] f |
+
+*** tmux Windon Control
+#+ATTR_HTML: :width 100% :height 100%
+| Describe               | tmux command mode        | Command           |
+|------------------------+--------------------------+-------------------|
+| list window            | choose-window            | [prefix] w        |
+| create new window      | new-window               | [prefix] c        |
+| rename window          | rename-window 'name'     | [prefix] , <name> |
+| select last window     | last-window              | [prefix] l        |
+| close window           | kill-window              | [preifx] &        |
+| next window            | next-window              | [prefix] n        |
+| previous window        | previous-window          | [prefix] p        |
+| select windows <0-9>   | select-window -t :=<0-9> | [prefix] <0-9>    |
+| select window via name | choose-window            | [prefix] w <name> |
+
+*** tmux Pane Control
+#+ATTR_HTML: :width 100% :height 100%
+| Describe                     | tmux command mode      | Command          |
+|------------------------------+------------------------+------------------|
+| show and select pane numbers | display-panes          | [prefix] q       |
+| split vertical               | split-window           | [prefix] "       |
+| split horizontal             | split-window -h        | [prefix] %       |
+| Max/Restore Pane             | resize-pane -Z         | [prefix] z       |
+| Pane->Window                 | break-pane             | [prefix] !       |
+| kill pane                    | kill-pane              | [prefix] x       |
+| reorganize (change layout)   | next-layout            | [prefix] <space> |
+| select/switch pane           | select-pane -<U/L/D/R> | [prefix] <arrow> |
+|                              | select-pane -t         | [prefix] o       |
+| previous pane                | swap-pane -U           | [prefix] {       |
+| next pane                    | swap-pane -D           | [prefix] }       |
+
+*** tmux Copy Control
+#+ATTR_HTML: :width 100% :height 100%
+| Describe                       | tmux command mode            | Command      |
+|--------------------------------+------------------------------+--------------|
+| enter copy mode                | copy-mode                    | [prefix] [   |
+| exit copy mode                 | N/A                          | q            |
+| qoto line                      | N/A                          | g            |
+| scroll up/down/                | N/A                          | <arrow>      |
+| move cursor up/down/left/right | N/A                          | ctrl p/n/b/f |
+| search word                    | N/A                          | ctrl s       |
+| mark on                        | N/A                          | ctrl <space> |
+| copy mark area to buffer       | N/A                          | alt w        |
+| display buffer_0 contents      | show-buffer                  | N/A          |
+| Show all buffers               | list-buffers                 | N/A          |
+| choose buffer                  | choose-buffer                | N/A          |
+| deletct buffer                 | delete-buffer -b <buffer_id> | N/A          |
+| paste buffer (exit copy mode)  | N/A                          | [prefix] ]   |
+
+*** tmux Misc Control
+#+ATTR_HTML: :width 100% :height 100%
+| Describe      | tmux command mode            | Command |
+|---------------+------------------------------+---------|
+| reload config | source-file $HOME/.tmux.conf |  N/A    |
+
+** tmux Configuration
+- config location: 
+    - $HOME/.tmux.conf
+    - /etc/tmux.conf
+- common used command
+    - set-option: set option contain status line
+    - set-window-option: set option of winodw
+    - bind-key: custom keybord shortcuts
+- copy data into system clipboard
+    - refer https://github.com/tmux-plugins/tmux-yank
+*** Useful Setting
+- change scrollback lines
+    #+BEGIN_SRC tmux_config
+    set -g history-limit 20000
+    #+END_SRC
+- assign prefix key
+    #+BEGIN_SRC tmux_config
+    unbind C-b
+    set -g prefix M-C-b
+    #+END_SRC
+- switch emacs/vim key binding
+    #+BEGIN_SRC tmux_config
+    set-option mode-keys vi
+    set-option status-keys vi
+    # emacs keybinding is default
+    # set -g mode-keys emacs   
+    # set-option status-keys emasc
+    #+END_SRC
+- set 256 coloers
+    #+BEGIN_SRC shell
+    # enable 256 coloers in your shell environment
+    echo "export TERM='xterm-256color'" > ~/.bashrc
+    #+END_SRC
+    #+BEGIN_SRC tmux_config
+    set -g default-terminal "screen-256color"
+    #+END_SRC
+- enable mouse scroll
+    #+BEGIN_SRC tmux_config
+    set -g terminal-overrides 'xterm*:smcup@:rmcup@'
+    #set -g mode-mouse on  <-- issue
+    #+END_SRC
+- enable mouse select pane
+    #+BEGIN_SRC tmux_config
+    set-option -g mouse-select-pane on
+    #+END_SRC
+- enable mouse resize pane
+    #+BEGIN_SRC tmux_config
+    set -g mouse-resize-pane on
+    #+END_SRC
+- reload config when you change configuration
+    #+BEGIN_SRC tmux_config
+    # bind a reload key
+    bind R source-file ~/.tmux.conf ; display-message "Config reloaded.."
+    #+END_SRC
+
+* tmux v.s. GNU Screen
+#+ATTR_HTML: :width 100% :height 100%
+| Feature                   | tmux  | Screen |
+|---------------------------+-------+--------|
+| Multiplexing              | v     | v      |
+| Persistence               | v     | v      |
+| Shared Sessions           | v     | v      |
+| Client/Server System      | v     |        |
+| Synchronize-panes         | v     |        |
+| Window-splitting          | v     |        |
+| Zmodem transfers          |       | V      |
+| Attaching to a serial tty |       | v      |
+| Line-wrapping             |       | v      |
+| Loggind (outdated)        |       | v      |
+| License                   | BSD   | GPL    |
+| Memory usage              | smell | large  |
+
+* Advance
+** tmuxifier
+- Tmuxify your Tmux. Powerful session, window & pane management for Tmux
+** Synchronize Panes
+1. enter tmux command mode
+2. enter "set synchronize-panes on"
+3. enter "set synchronize-panes off" to disable
+** Vim Configure
+*** fix issue via modify vim config
+- fix color issue
+  #+BEGIN_SRC vim_config
+  if exists('$TMUX')
+      set term=screen-256color
+  endif
+  #+END_SRC
+- fix CursorShape issue 
+  #+BEGIN_SRC vim_config
+  if exists('$ITERM_PROFILE')
+     if exists('$TMUX') 
+         let &amp;t_SI = "<Esc>[3 q"
+         let &amp;t_EI = "<Esc>[0 q"
+     else
+         let &amp;t_SI = "<Esc>]50;CursorShape=1x7"
+         let &amp;t_EI = "<Esc>]50;CursorShape=0x7"
+     endif
+  end
+  #+END_SRC
+*** stop auto indentation if paste
+  #+BEGIN_SRC vim_config
+  " for tmux to automatically set paste and nopaste mode at the time pasting (as happens in VIM UI)
+ 
+  function! WrapForTmux(s)
+      if !exists('$TMUX')
+          return a:s
+      endif
+ 
+      let tmux_start = "<Esc>Ptmux;"
+      let tmux_end = "<Esc>"
+ 
+      return tmux_start . substitute(a:s, "<Esc>", "<Esc><Esc>", 'g') . tmux_end
+  endfunction
+ 
+  let &amp;t_SI .= WrapForTmux("<Esc>[?2004h")
+  let &amp;t_EI .= WrapForTmux("<Esc>[?2004l")
+ 
+  function! XTermPasteBegin()
+      set pastetoggle=<Esc>[201~
+      set paste
+      return ""
+  endfunction
+ 
+  inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
+  #+END_SRC
+*** mouse issue
+  #+BEGIN_SRC vim_config
+  ttymouse=xterm
+  # or
+  ttymouse=xterm2
+  #+END_SRC
+

@@ -1,0 +1,51 @@
+#+TITLE: ngrok - Secure tunnels to localhost
+  - https://ngrok.com
+
+* ngrok
+  - secure tunnels to localhost
+      - I want to expose a local server behind a NAT or firewall to the internet.
+  - get random public ip via ngrok
+
+* Install
+  - sign up to get autotoken
+  - download ngrok
+  - install authtoken
+    #+BEGIN_SRC shell
+    ngrok authtoken XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    # produce ~/.ngrok2.ngrok.yml file
+    #+END_SRC
+
+* Example
+** ssh port 22
+  - start ngrok in local machine
+   #+BEGIN_SRC shell
+   $ ngrok tcp 22
+   Session Status                online
+   Account                       YuCheng Hsu (Plan: Free)
+   Version                       2.2.8
+   Region                        United States (us)
+   Version                       2.2.8
+   Web Interface                 http://127.0.0.1:4040
+   Forwarding                    tcp://0.tcp.ngrok.io:12345 -> localhost:22
+   #+END_SRC
+  - remote access
+   #+BEGIN_SRC shell
+   $ ssh <user_name>@0.tcp.ngrok.io -p12345
+   #+END_SRC
+** http 8080
+   - start ngrok
+   #+BEGIN_SRC shell
+   $nport http 8080
+   Session Status                online
+   Account                       YuCheng Hsu (Plan: Free)
+   Version                       2.2.8
+   Region                        United States (us)
+   Web Interface                 http://127.0.0.1:4040
+   Forwarding                    http://7dcda714.ngrok.io -> localhost:8080
+   Forwarding                    https://7dcda714.ngrok.io -> localhost:8080
+
+   Connections                   ttl     opn     rt1     rt5     p50     p90
+                                  0       0       0.00    0.00    0.00    0.00
+   #+END_SRC
+   - remote access 
+     - http://7dcda714.ngrok.io

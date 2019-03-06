@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>tmux</title>
+<meta name="author" content="(Knight Yu)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/reveal.css"/>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/theme/moon.css" id="theme"/>
+<link rel="stylesheet" href="./presentation.css"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'http://cdn.jsdelivr.net/reveal.js/3.0.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide">
+<h1>tmux</h1>
+<h2>Knight Yu</h2>
+<h2><a href="mailto:knighthsuyucheng@gmail.com">knighthsuyucheng@gmail.com</a></h2>
+<h2>2016-03-13</h2>
+</section>
+<section id="table-of-contents">
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#/slide-orgheadline1">1. Scenario</a></li>
+<li><a href="#/slide-orgheadline16">2. tmux</a>
+<ul>
+<li><a href="#/slide-orgheadline2">2.1. What is Terminal Multiplexer</a></li>
+<li><a href="#/slide-orgheadline3">2.2. tmux Install</a></li>
+<li><a href="#/slide-orgheadline4">2.3. tmux Client-Server Architecture</a></li>
+<li><a href="#/slide-orgheadline6">2.4. tmux View</a>
+<ul>
+<li><a href="#/slide-orgheadline5">2.4.1. tmux Window Pane View</a></li>
+</ul>
+</li>
+<li><a href="#/slide-orgheadline13">2.5. Flexible Session / Window / Pane Windows Manager</a>
+<ul>
+<li><a href="#/slide-orgheadline7">2.5.1. Tmux Command (Bash/Zsh, &#x2026;, in Terminal)</a></li>
+<li><a href="#/slide-orgheadline8">2.5.2. tmux Session Control</a></li>
+<li><a href="#/slide-orgheadline9">2.5.3. tmux Windon Control</a></li>
+<li><a href="#/slide-orgheadline10">2.5.4. tmux Pane Control</a></li>
+<li><a href="#/slide-orgheadline11">2.5.5. tmux Copy Control</a></li>
+<li><a href="#/slide-orgheadline12">2.5.6. tmux Misc Control</a></li>
+</ul>
+</li>
+<li><a href="#/slide-orgheadline15">2.6. tmux Configuration</a>
+<ul>
+<li><a href="#/slide-orgheadline14">2.6.1. Useful Setting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#/slide-orgheadline17">3. tmux v.s. GNU Screen</a></li>
+<li><a href="#/slide-orgheadline24">4. Advance</a>
+<ul>
+<li><a href="#/slide-orgheadline18">4.1. tmuxifier</a></li>
+<li><a href="#/slide-orgheadline19">4.2. Synchronize Panes</a></li>
+<li><a href="#/slide-orgheadline23">4.3. Vim Configure</a>
+<ul>
+<li><a href="#/slide-orgheadline20">4.3.1. fix issue via modify vim config</a></li>
+<li><a href="#/slide-orgheadline21">4.3.2. stop auto indentation if paste</a></li>
+<li><a href="#/slide-orgheadline22">4.3.3. mouse issue</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section>
+<section id="slide-orgheadline1">
+<h2 id="orgheadline1"><span class="section-number-2">1</span> Scenario</h2>
+<ul>
+<li>I need more consoles!</li>
+<li>compile</li>
+<li>vim</li>
+<li>use mouse to copy/paste messages between terminals</li>
+<li>repeat setup/environment in terminal
+<ul>
+<li>ssh login</li>
+
+</ul></li>
+
+</ul>
+
+<div id="orgparagraph1" class="figure">
+<p><img src="./pic/no_action.png" alt="no_action.png" />
+</p>
+<p><span class="figure-number">Figure 1:</span> many terminals</p>
+</div>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline16">
+<h2 id="orgheadline16"><span class="section-number-2">2</span> tmux</h2>
+<ul>
+<li>a terminal multiplexer</li>
+<li>a client-server architecture</li>
+<li>similar GNU Screen
+<ul>
+<li>memory usage: screen &gt;&gt; tmux</li>
+
+</ul></li>
+<li>features
+<ul>
+<li>persistence</li>
+<li>quick change session</li>
+<li>shared sessions (pair programming)</li>
+<li>window-splitting</li>
+
+</ul></li>
+
+</ul>
+</section>
+<section id="slide-orgheadline2">
+<h3 id="orgheadline2"><span class="section-number-3">2.1</span> What is Terminal Multiplexer</h3>
+<ul>
+<li>“A terminal multiplexer is a software 
+application that can be used to multiplex
+several virtual consoles, allowing a user
+to access multiple separate terminal sessions 
+inside a single terminal window or remote 
+terminal session.”</li>
+
+</ul>
+</section>
+<section id="slide-orgheadline3">
+<h3 id="orgheadline3"><span class="section-number-3">2.2</span> tmux Install</h3>
+<ul>
+<li><p>
+refer your distribution
+</p>
+<ul>
+<li>Archlinux</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-shell">$ sudo pacman -S tmux
+</pre>
+</div>
+<ul>
+<li>Debian/Ubuntu: apt-get install tmux</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-shell">$ sudo apt-get install tmux
+</pre>
+</div>
+<ul>
+<li>Redhat (centos/fedora)</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-shell">$ sudo dnf install tmux
+<span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">or</span>
+$ sudo yum install tmux
+</pre>
+</div>
+<ul>
+<li>Mac</li>
+
+</ul>
+<div class="org-src-container">
+
+<pre  class="src src-shell"><span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">use brew</span>
+$ brew install tmux
+<span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">use MacPorts</span>
+$ port install tmux
+</pre>
+</div>
+<ul>
+<li>Windows Cygwin
+<ul>
+<li>clink tmux via package manager</li>
+
+</ul></li>
+
+</ul></li>
+
+</ul>
+</section>
+<section id="slide-orgheadline4">
+<h3 id="orgheadline4"><span class="section-number-3">2.3</span> tmux Client-Server Architecture</h3>
+
+<div id="orgparagraph2" class="figure">
+<p><img src="./pic/session-window-pane.png" alt="session-window-pane.png" />
+</p>
+<p><span class="figure-number">Figure 2:</span> client-server</p>
+</div>
+
+</section>
+<section id="slide-orgheadline6">
+<h3 id="orgheadline6"><span class="section-number-3">2.4</span> tmux View</h3>
+<ul>
+<li><p>
+trigger tmux via tmux command
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-shell">$ tmux
+</pre>
+</div></li>
+<li>session: terminal of tmux</li>
+<li>window: terminal of session</li>
+<li>pane (pannnel): terminal of window</li>
+
+</ul>
+
+<div id="orgparagraph3" class="figure">
+<p><img src="./pic/tmux_session_list.png" alt="tmux_session_list.png" />
+</p>
+<p><span class="figure-number">Figure 3:</span> tmux session list</p>
+</div>
+
+</section>
+<section id="slide-orgheadline5">
+<h4 id="orgheadline5"><span class="section-number-4">2.4.1</span> tmux Window Pane View</h4>
+
+<div id="orgparagraph4" class="figure">
+<p><img src="./pic/tmux_developer.png" alt="tmux_developer.png" />
+</p>
+<p><span class="figure-number">Figure 4:</span> tmux Window Pane View</p>
+</div>
+</section>
+<section id="slide-orgheadline13">
+<h3 id="orgheadline13"><span class="section-number-3">2.5</span> Flexible Session / Window / Pane Windows Manager</h3>
+<ul>
+<li>[prefix] key: default is "ctrl b"</li>
+<li>tmux command mode: default is "[prefix] :"
+<ul>
+<li>enter your command to control tmux</li>
+
+</ul></li>
+
+</ul>
+
+</section>
+<section id="slide-orgheadline7">
+<h4 id="orgheadline7"><span class="section-number-4">2.5.1</span> Tmux Command (Bash/Zsh, &#x2026;, in Terminal)</h4>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" width="100%" height="100%">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Describe</th>
+<th scope="col" class="org-left">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">start tmux and create new session</td>
+<td class="org-left">tmux</td>
+</tr>
+
+<tr>
+<td class="org-left">list sessions</td>
+<td class="org-left">tmux ls</td>
+</tr>
+
+<tr>
+<td class="org-left">enter tmux and use last session</td>
+<td class="org-left">tmux attach</td>
+</tr>
+
+<tr>
+<td class="org-left">enter tmux and restore &lt;session-id&gt;</td>
+<td class="org-left">tmux attach -t &lt;session-id&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">kill &lt;session-id&gt;</td>
+<td class="org-left">tmux kill-session -t &lt;session-id&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">kill all sessions</td>
+<td class="org-left">tmux kill-session -a</td>
+</tr>
+
+<tr>
+<td class="org-left">detach &lt;session-id&gt;</td>
+<td class="org-left">tmux detach -t &lt;session-id&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">detach &lt;session-name&gt;</td>
+<td class="org-left">tmux detach -s &lt;session-name&gt;</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-orgheadline8">
+<h4 id="orgheadline8"><span class="section-number-4">2.5.2</span> tmux Session Control</h4>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" width="100%" height="100%">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Describe</th>
+<th scope="col" class="org-left">tmux command mode</th>
+<th scope="col" class="org-left">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">create new session</td>
+<td class="org-left">new</td>
+<td class="org-left">N/A</td>
+</tr>
+
+<tr>
+<td class="org-left">create new session, and set name</td>
+<td class="org-left">new -s &lt;name&gt;</td>
+<td class="org-left">N/A</td>
+</tr>
+
+<tr>
+<td class="org-left">list keybinding</td>
+<td class="org-left">list-keys</td>
+<td class="org-left">[prefix] ?</td>
+</tr>
+
+<tr>
+<td class="org-left">rename session</td>
+<td class="org-left">rename-session 'name'</td>
+<td class="org-left">[prefix] $</td>
+</tr>
+
+<tr>
+<td class="org-left">list sessions</td>
+<td class="org-left">choose-tree</td>
+<td class="org-left">[prefix] s</td>
+</tr>
+
+<tr>
+<td class="org-left">next session</td>
+<td class="org-left">switch-client -p</td>
+<td class="org-left">[prefix] (</td>
+</tr>
+
+<tr>
+<td class="org-left">previous session</td>
+<td class="org-left">switch-client -n</td>
+<td class="org-left">[prefix] )</td>
+</tr>
+
+<tr>
+<td class="org-left">deattach session</td>
+<td class="org-left">detach-client</td>
+<td class="org-left">[prefix] d</td>
+</tr>
+
+<tr>
+<td class="org-left">find string in all window</td>
+<td class="org-left">find-window 'string'</td>
+<td class="org-left">[prefix] f</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-orgheadline9">
+<h4 id="orgheadline9"><span class="section-number-4">2.5.3</span> tmux Windon Control</h4>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" width="100%" height="100%">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Describe</th>
+<th scope="col" class="org-left">tmux command mode</th>
+<th scope="col" class="org-left">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">list window</td>
+<td class="org-left">choose-window</td>
+<td class="org-left">[prefix] w</td>
+</tr>
+
+<tr>
+<td class="org-left">create new window</td>
+<td class="org-left">new-window</td>
+<td class="org-left">[prefix] c</td>
+</tr>
+
+<tr>
+<td class="org-left">rename window</td>
+<td class="org-left">rename-window 'name'</td>
+<td class="org-left">[prefix] , &lt;name&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">select last window</td>
+<td class="org-left">last-window</td>
+<td class="org-left">[prefix] l</td>
+</tr>
+
+<tr>
+<td class="org-left">close window</td>
+<td class="org-left">kill-window</td>
+<td class="org-left">[preifx] &amp;</td>
+</tr>
+
+<tr>
+<td class="org-left">next window</td>
+<td class="org-left">next-window</td>
+<td class="org-left">[prefix] n</td>
+</tr>
+
+<tr>
+<td class="org-left">previous window</td>
+<td class="org-left">previous-window</td>
+<td class="org-left">[prefix] p</td>
+</tr>
+
+<tr>
+<td class="org-left">select windows &lt;0-9&gt;</td>
+<td class="org-left">select-window -t :=&lt;0-9&gt;</td>
+<td class="org-left">[prefix] &lt;0-9&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">select window via name</td>
+<td class="org-left">choose-window</td>
+<td class="org-left">[prefix] w &lt;name&gt;</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-orgheadline10">
+<h4 id="orgheadline10"><span class="section-number-4">2.5.4</span> tmux Pane Control</h4>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" width="100%" height="100%">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Describe</th>
+<th scope="col" class="org-left">tmux command mode</th>
+<th scope="col" class="org-left">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">show and select pane numbers</td>
+<td class="org-left">display-panes</td>
+<td class="org-left">[prefix] q</td>
+</tr>
+
+<tr>
+<td class="org-left">split vertical</td>
+<td class="org-left">split-window</td>
+<td class="org-left">[prefix] "</td>
+</tr>
+
+<tr>
+<td class="org-left">split horizontal</td>
+<td class="org-left">split-window -h</td>
+<td class="org-left">[prefix] %</td>
+</tr>
+
+<tr>
+<td class="org-left">Max/Restore Pane</td>
+<td class="org-left">resize-pane -Z</td>
+<td class="org-left">[prefix] z</td>
+</tr>
+
+<tr>
+<td class="org-left">Pane-&gt;Window</td>
+<td class="org-left">break-pane</td>
+<td class="org-left">[prefix] !</td>
+</tr>
+
+<tr>
+<td class="org-left">kill pane</td>
+<td class="org-left">kill-pane</td>
+<td class="org-left">[prefix] x</td>
+</tr>
+
+<tr>
+<td class="org-left">reorganize (change layout)</td>
+<td class="org-left">next-layout</td>
+<td class="org-left">[prefix] &lt;space&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">select/switch pane</td>
+<td class="org-left">select-pane -&lt;U/L/D/R&gt;</td>
+<td class="org-left">[prefix] &lt;arrow&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">select-pane -t</td>
+<td class="org-left">[prefix] o</td>
+</tr>
+
+<tr>
+<td class="org-left">previous pane</td>
+<td class="org-left">swap-pane -U</td>
+<td class="org-left">[prefix] {</td>
+</tr>
+
+<tr>
+<td class="org-left">next pane</td>
+<td class="org-left">swap-pane -D</td>
+<td class="org-left">[prefix] }</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-orgheadline11">
+<h4 id="orgheadline11"><span class="section-number-4">2.5.5</span> tmux Copy Control</h4>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" width="100%" height="100%">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Describe</th>
+<th scope="col" class="org-left">tmux command mode</th>
+<th scope="col" class="org-left">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">enter copy mode</td>
+<td class="org-left">copy-mode</td>
+<td class="org-left">[prefix] [</td>
+</tr>
+
+<tr>
+<td class="org-left">exit copy mode</td>
+<td class="org-left">N/A</td>
+<td class="org-left">q</td>
+</tr>
+
+<tr>
+<td class="org-left">qoto line</td>
+<td class="org-left">N/A</td>
+<td class="org-left">g</td>
+</tr>
+
+<tr>
+<td class="org-left">scroll up/down/</td>
+<td class="org-left">N/A</td>
+<td class="org-left">&lt;arrow&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">move cursor up/down/left/right</td>
+<td class="org-left">N/A</td>
+<td class="org-left">ctrl p/n/b/f</td>
+</tr>
+
+<tr>
+<td class="org-left">search word</td>
+<td class="org-left">N/A</td>
+<td class="org-left">ctrl s</td>
+</tr>
+
+<tr>
+<td class="org-left">mark on</td>
+<td class="org-left">N/A</td>
+<td class="org-left">ctrl &lt;space&gt;</td>
+</tr>
+
+<tr>
+<td class="org-left">copy mark area to buffer</td>
+<td class="org-left">N/A</td>
+<td class="org-left">alt w</td>
+</tr>
+
+<tr>
+<td class="org-left">display buffer<sub>0</sub> contents</td>
+<td class="org-left">show-buffer</td>
+<td class="org-left">N/A</td>
+</tr>
+
+<tr>
+<td class="org-left">Show all buffers</td>
+<td class="org-left">list-buffers</td>
+<td class="org-left">N/A</td>
+</tr>
+
+<tr>
+<td class="org-left">choose buffer</td>
+<td class="org-left">choose-buffer</td>
+<td class="org-left">N/A</td>
+</tr>
+
+<tr>
+<td class="org-left">deletct buffer</td>
+<td class="org-left">delete-buffer -b &lt;buffer<sub>id</sub>&gt;</td>
+<td class="org-left">N/A</td>
+</tr>
+
+<tr>
+<td class="org-left">paste buffer (exit copy mode)</td>
+<td class="org-left">N/A</td>
+<td class="org-left">[prefix] ]</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-orgheadline12">
+<h4 id="orgheadline12"><span class="section-number-4">2.5.6</span> tmux Misc Control</h4>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" width="100%" height="100%">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Describe</th>
+<th scope="col" class="org-left">tmux command mode</th>
+<th scope="col" class="org-left">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">reload config</td>
+<td class="org-left">source-file $HOME/.tmux.conf</td>
+<td class="org-left">N/A</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="slide-orgheadline15">
+<h3 id="orgheadline15"><span class="section-number-3">2.6</span> tmux Configuration</h3>
+<ul>
+<li>config location: 
+<ul>
+<li>$HOME/.tmux.conf</li>
+<li>/etc/tmux.conf</li>
+
+</ul></li>
+<li>common used command
+<ul>
+<li>set-option: set option contain status line</li>
+<li>set-window-option: set option of winodw</li>
+<li>bind-key: custom keybord shortcuts</li>
+
+</ul></li>
+<li>copy data into system clipboard
+<ul>
+<li>refer <a href="https://github.com/tmux-plugins/tmux-yank">https://github.com/tmux-plugins/tmux-yank</a></li>
+
+</ul></li>
+
+</ul>
+</section>
+<section id="slide-orgheadline14">
+<h4 id="orgheadline14"><span class="section-number-4">2.6.1</span> Useful Setting</h4>
+<ul>
+<li><p>
+change scrollback lines
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config">set -g history-limit 20000
+</pre>
+</div></li>
+<li><p>
+assign prefix key
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config">unbind C-b
+set -g prefix M-C-b
+</pre>
+</div></li>
+<li><p>
+switch emacs/vim key binding
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config">set-option mode-keys vi
+set-option status-keys vi
+# emacs keybinding is default
+# set -g mode-keys emacs   
+# set-option status-keys emasc
+</pre>
+</div></li>
+<li><p>
+set 256 coloers
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-shell"><span style="color: #2aa1ae; background-color: #292e34;"># </span><span style="color: #2aa1ae; background-color: #292e34;">enable 256 coloers in your shell environment</span>
+<span style="color: #4f97d7;">echo</span> <span style="color: #2d9574;">"export TERM='xterm-256color'"</span> &gt; ~/.bashrc
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config">set -g default-terminal "screen-256color"
+</pre>
+</div></li>
+<li><p>
+enable mouse scroll
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config">set -g terminal-overrides 'xterm*:smcup@:rmcup@'
+#set -g mode-mouse on  &lt;-- issue
+</pre>
+</div></li>
+<li><p>
+enable mouse select pane
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config">set-option -g mouse-select-pane on
+</pre>
+</div></li>
+<li><p>
+enable mouse resize pane
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config">set -g mouse-resize-pane on
+</pre>
+</div></li>
+<li><p>
+reload config when you change configuration
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-tmux_config"># bind a reload key
+bind R source-file ~/.tmux.conf ; display-message "Config reloaded.."
+</pre>
+</div></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline17">
+<h2 id="orgheadline17"><span class="section-number-2">3</span> tmux v.s. GNU Screen</h2>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides" width="100%" height="100%">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Feature</th>
+<th scope="col" class="org-left">tmux</th>
+<th scope="col" class="org-left">Screen</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Multiplexing</td>
+<td class="org-left">v</td>
+<td class="org-left">v</td>
+</tr>
+
+<tr>
+<td class="org-left">Persistence</td>
+<td class="org-left">v</td>
+<td class="org-left">v</td>
+</tr>
+
+<tr>
+<td class="org-left">Shared Sessions</td>
+<td class="org-left">v</td>
+<td class="org-left">v</td>
+</tr>
+
+<tr>
+<td class="org-left">Client/Server System</td>
+<td class="org-left">v</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Synchronize-panes</td>
+<td class="org-left">v</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Window-splitting</td>
+<td class="org-left">v</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">Zmodem transfers</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">V</td>
+</tr>
+
+<tr>
+<td class="org-left">Attaching to a serial tty</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">v</td>
+</tr>
+
+<tr>
+<td class="org-left">Line-wrapping</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">v</td>
+</tr>
+
+<tr>
+<td class="org-left">Loggind (outdated)</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">v</td>
+</tr>
+
+<tr>
+<td class="org-left">License</td>
+<td class="org-left">BSD</td>
+<td class="org-left">GPL</td>
+</tr>
+
+<tr>
+<td class="org-left">Memory usage</td>
+<td class="org-left">smell</td>
+<td class="org-left">large</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+</section>
+<section>
+<section id="slide-orgheadline24">
+<h2 id="orgheadline24"><span class="section-number-2">4</span> Advance</h2>
+<div class="outline-text-2" id="text-4">
+</div></section>
+<section id="slide-orgheadline18">
+<h3 id="orgheadline18"><span class="section-number-3">4.1</span> tmuxifier</h3>
+<ul>
+<li>Tmuxify your Tmux. Powerful session, window &amp; pane management for Tmux</li>
+
+</ul>
+</section>
+<section id="slide-orgheadline19">
+<h3 id="orgheadline19"><span class="section-number-3">4.2</span> Synchronize Panes</h3>
+<ol>
+<li>enter tmux command mode</li>
+<li>enter "set synchronize-panes on"</li>
+<li>enter "set synchronize-panes off" to disable</li>
+
+</ol>
+</section>
+<section id="slide-orgheadline23">
+<h3 id="orgheadline23"><span class="section-number-3">4.3</span> Vim Configure</h3>
+<div class="outline-text-3" id="text-4-3">
+</div></section>
+<section id="slide-orgheadline20">
+<h4 id="orgheadline20"><span class="section-number-4">4.3.1</span> fix issue via modify vim config</h4>
+<ul>
+<li><p>
+fix color issue
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-vim_config">if exists('$TMUX')
+    set term=screen-256color
+endif
+</pre>
+</div></li>
+<li><p>
+fix CursorShape issue 
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-vim_config">if exists('$ITERM_PROFILE')
+   if exists('$TMUX') 
+       let &amp;amp;t_SI = "&lt;Esc&gt;[3 q"
+       let &amp;amp;t_EI = "&lt;Esc&gt;[0 q"
+   else
+       let &amp;amp;t_SI = "&lt;Esc&gt;]50;CursorShape=1x7"
+       let &amp;amp;t_EI = "&lt;Esc&gt;]50;CursorShape=0x7"
+   endif
+end
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-orgheadline21">
+<h4 id="orgheadline21"><span class="section-number-4">4.3.2</span> stop auto indentation if paste</h4>
+<div class="org-src-container">
+
+<pre  class="src src-vim_config">" for tmux to automatically set paste and nopaste mode at the time pasting (as happens in VIM UI)
+
+function! WrapForTmux(s)
+    if !exists('$TMUX')
+        return a:s
+    endif
+
+    let tmux_start = "&lt;Esc&gt;Ptmux;"
+    let tmux_end = "&lt;Esc&gt;"
+
+    return tmux_start . substitute(a:s, "&lt;Esc&gt;", "&lt;Esc&gt;&lt;Esc&gt;", 'g') . tmux_end
+endfunction
+
+let &amp;amp;t_SI .= WrapForTmux("&lt;Esc&gt;[?2004h")
+let &amp;amp;t_EI .= WrapForTmux("&lt;Esc&gt;[?2004l")
+
+function! XTermPasteBegin()
+    set pastetoggle=&lt;Esc&gt;[201~
+    set paste
+    return ""
+endfunction
+
+inoremap &lt;special&gt; &lt;expr&gt; &lt;Esc&gt;[200~ XTermPasteBegin()
+</pre>
+</div>
+</section>
+<section id="slide-orgheadline22">
+<h4 id="orgheadline22"><span class="section-number-4">4.3.3</span> mouse issue</h4>
+<div class="org-src-container">
+
+<pre  class="src src-vim_config">ttymouse=xterm
+# or
+ttymouse=xterm2
+</pre>
+</div>
+</section>
+</section>
+</div>
+</div>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/head.min.js"></script>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

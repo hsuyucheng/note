@@ -1,0 +1,178 @@
+-*-Org-*-
+#+TITLE: GitLab Community Version
+#+Author: Knight Yu (knighthsuyucheng@gmail.com)
+#+OPTIONS: ^:nil
+#+Date: 2018-03-17
+
+   - default admin account: root
+      - password: 5iveL!
+   - reconfig: gitlab-ctl reconfigure 
+* Install
+  - refer [[https://about.gitlab.com/installation/][https://about.gitlab.com/installation/]]
+  - hardware requirement
+    - > 2GB RAM for gitLab
+** Method 1: Install on PC
+*** Create Database
+*** Install GitLab
+  - You should add gitLab domain name and port in web server configuration
+  - Example on Debian
+    #+BEGIN_SRC shell
+    # install dependencies
+    sudo apt-get install -y curl openssh-server ca-certificates
+    # install email send app (SNMP server)
+    sudo apt-get install -y postfix
+    # install gitlab from Debain package database
+    sudo apt-get install gitlab
+    ## or use gitLab release package
+    ## add key
+    ## curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | sudo bash
+    ## sudo apt-get update; sudo apt-get install gitlab-ce
+    #+END_SRC
+*** Modify Web Server if You Doesn't Use gitLab Built-in Web Server
+ 
+** Method 2: Install on Docker
+    - refer [[https://docs.gitlab.com/omnibus/docker/][https://docs.gitlab.com/omnibus/docker/]]
+      #+BEGIN_SRC shell
+      ## hostname is knighthsuyucheng.com
+      ## host port 10000 to docker 443 port for https
+      ## host port 83 to docker 80 port for http
+      ## host port 30 to docker 22 port for ssh
+      ## data stored in host /srv/gitlab
+      sudo docker run --detach \
+      --hostname knighthsuyucheng.com \
+      --publish 10000:443 --publish 83:80 --publish 30:22 \
+      --name gitlab \
+      --restart always \
+      --volume /srv/gitlab/config:/etc/gitlab \
+      --volume /srv/gitlab/logs:/var/log/gitlab \
+      --volume /srv/gitlab/data:/var/opt/gitlab \
+      gitlab/gitlab-ce:latest
+      #+END_SRC
+    - docker command on SELinux
+      #+BEGIN_SRC shell
+      ## hostname is knighthsuyucheng.com
+      ## host port 10000 to docker 443 port for https
+      ## host port 83 to docker 80 port for http
+      ## host port 30 to docker 22 port for ssh
+      ## data stored in host /srv/gitlab
+      sudo docker run --detach \
+      --hostname knighthsuyucheng.com \
+      --publish 10000:443 --publish 83:80 --publish 30:22 \
+      --name gitlab \
+      --restart always \
+      --volume /srv/gitlab/config:/etc/gitlab:Z \
+      --volume /srv/gitlab/logs:/var/log/gitlab:Z \
+      --volume /srv/gitlab/data:/var/opt/gitlab:Z \
+      gitlab/gitlab-ce:latest
+      #+END_SRC
+*** Data Location
+    | Local location (host) | Containter location | Usage                                      |
+    |-----------------------+---------------------+--------------------------------------------|
+    | /srvgilab/data        | /var/opt/gitlab     | For storing application data               |
+    | /srv/gitlab/logs      | /var/log/gitlab     | For storing logs                           |
+    | /srv/gitlab/config    | /etc/gitlab         | For storing the GitLab configuration files |
+
+    - enable gitLab docker
+      #+BEGIN_SRC
+      sudo docker exec -it gitlab /bin/bash
+      #+END_SRC
+
+* gitLab Service Configuration
+  - modify /etc/gitlab/gitlab.rb
+    - set externl url for everyone/group
+  - reconfig command
+    #+BEGIN_SRC shell
+    sudo gitlab-ctl reconfigure
+    #+END_SRC
+  - command to start/stop gitlab
+    #+BEGIN_SRC shell
+    sudo gitlab-ctl start
+    sudo gitlab-ctl stop
+    #+ENS_SRC
+* Security
+** Set User/Root Password on terminal
+  1. start the console (wait some time)
+     #+BEGIN_SRC shell
+     gitlab-rails console production
+     #+END_SRC
+  2. select user, example root
+     #+BEGIN_SRC shell
+     usr=User.where(id: 1).first
+     ## or
+     ## user = User.find_by(email: 'admin@local.host')
+     #+END_SRC
+  3. change password
+     #+BEGIN_SRC shell
+     user.password = 'secret_pass'
+     user.password_confirmation = 'secret_pass'
+     user.save!
+     #+END_SRC 
+  4. exit gitlab-rails console
+     #+BEGIN_SRC shell
+     quit
+     #+END_SRC 
+   
+
+* LDAP
+ - check LDAP connection on gitlab
+   - gitlab-rake gitlab:ldap:check RAILS_ENV=production
+ - gitlab-ctl restart if you first use LDAP features
+
+* Import Exist Repositories into GitLab
+** Import bare repositories (import a lot of repositories)
+  - step 1. package or compress your bare repository
+    #+BEGIN_SRC shell
+    cd /home/git/repositories/
+    tar cvf code.tar abc.git def.git
+    #+END_SRC
+  - step 2. find repository location of Gitlab
+    - find gitlab.yml in GitLab folders
+    - open gitlab.yml and check repos_path variable to get location
+      - note - Gitlab default repository location is 
+        */var/opt/gitlab/git-data/repositories/*
+  - note - rule of Gitlab bare repository
+    | Repo Owner | RepoName | Storage Path                          |
+    |------------+----------+---------------------------------------|
+    | user       | abc      | repositories_root/user/abc.git        |
+    |            |          | ex. repositories_root/tedhsu/wifi.git |
+    | group      | def      | repositories_root/group/def.git       |
+    |            |          | ex. repositories_root/evotech/def.git |
+
+  - step 3. move package/compress file to Gitlab PC
+  - step 4. unpack/uncompress file into new folder
+    #+BEGIN_SRC shell
+    tar -xf ./code.tar
+    mkdir backup
+    mv a.git b.git c.git backup
+    #+END_SRC
+  - step 5. assign user or group (user and group have been defined in Gitlab)
+    #+BEGIN_SRC shell
+    cd backup
+    mkdir <user_name>
+    mv abc.git ./<user_name>
+    mkdir <group_name>
+    mv def.git <group_name>
+    #+END_SRC
+  - step 6. assign owner git:git permission
+    #+BEGIN_SRC shell
+    chown -R git:git ./backup
+    chmod -R 770 ./backup
+    #+END_SRC
+  - step 6. import repositories
+    #+BEGIN_SRC shell
+    gitlab-rake gitlab:import:repos['repo_folder_for_import']
+    # ex. gitlab-rake gitlab:import:repos['/home/yu/backup']
+    #+END_SRC
+    - import success example
+      #+BEGIN_SRC shell
+      Processing /home/yu/backup/yu/abc.git
+      * Using namespace: yu
+      * Created utility (yu/abc)
+      Processing /home/yu/backup/evotech/def.git
+      * Using namespace: evotech
+      * Created optimalWiFi (evotech/def)
+      #+END_SRC
+  - step 7. restart Gitlab
+    #+BEGIN_SRC shell
+    gitlab-ctl restart
+    #+END_SRC

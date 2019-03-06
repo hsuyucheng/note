@@ -1,0 +1,8 @@
+-*-Org-*-
+#+TITLE: Pandoc
+  - https://pandoc.org
+
+* Markdown to emacs Org
+  #+BEGIN_SRC shell
+  pandoc -f markdown -t org -o newfile.org original-file.markdown
+  #+END_SRC

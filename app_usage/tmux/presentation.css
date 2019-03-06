@@ -1,0 +1,10 @@
+.reveal table th, .reveal table td {
+    text-align: center;
+    border: 1px solid white;
+}
+
+.reveal pre {
+    width: 100%;
+    border: none;
+    box-shadow: none;
+}
